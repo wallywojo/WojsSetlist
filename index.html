@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Setlist</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Colors are injected from config.json at runtime */
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Barlow', sans-serif;
+            margin: 0;
+        }
+
+        h1 {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+        }
+
+        /* Search */
+        #search {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'Barlow', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.15s;
+        }
+        #search:focus { outline: none; border-color: var(--primary); }
+        #search::placeholder { color: var(--muted); }
+
+        /* Sort buttons */
+        .sort-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 6px 18px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .sort-btn:hover { color: var(--text); border-color: #444; }
+        .sort-btn.active {
+            background: var(--primary-dark);
+            border-color: var(--primary-dim);
+            color: #fff;
+        }
+
+        /* Song card */
+        .song-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: background 0.12s, border-color 0.12s;
+        }
+        .song-card:hover {
+            background: var(--surface2);
+            border-color: #383838;
+        }
+
+        /* Index number */
+        .song-index {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.75rem;
+            color: var(--muted);
+            min-width: 34px;
+            text-align: right;
+        }
+
+        /* Song name */
+        .song-name {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--song-name);
+            line-height: 1.2;
+        }
+        .song-artist {
+            font-size: 0.82rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .song-album {
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+        .song-lenght{
+            font-size: 0.70rem;
+            color: var(--text);
+            font-style:oblique;
+            font-weight: 600;
+        }
+
+        .song-genre{
+            font-size: 0.65rem;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .video-badge {
+            display: inline-block;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            padding: 3px 8px;
+            background: var(--primary-dark);
+            color: #fff;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .song-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .yt-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 6px 10px;
+            background: #B2071D;
+            color: #fff;
+            border-radius: 6px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background 0.12s;
+            flex-shrink: 0;
+        }
+        .yt-btn:visited, .sp-btn:visited { color: #fff; }
+        .yt-btn:hover, .yt-btn:visited:hover { background: #9D071B; color: #0a0f14; }
+        .sp-btn:hover, .sp-btn:visited:hover { background: #168D40; color: #0a0f14; }
+
+        .sp-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 6px 10px;
+            background: #1DB954;
+            color: #fff;
+            border-radius: 6px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background 0.12s;
+            flex-shrink: 0;
+        }
+
+
+        /* Group header */
+        .group-header {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 1.35rem;
+            letter-spacing: 0.04em;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 4px 4px;
+            margin-top: 18px;
+            text-transform: uppercase;
+        }
+
+        /* Letter jump bar */
+        #letter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-bottom: 14px;
+        }
+        .letter-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.78rem;
+            padding: 4px 7px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.12s;
+            min-width: 26px;
+            text-align: center;
+        }
+        .letter-btn:hover { color: var(--text); border-color: #555; }
+        .letter-btn.active {
+            background: var(--primary-dark);
+            border-color: var(--primary-dim);
+            color: #fff;
+        }
+        .letter-btn.disabled {
+            opacity: 0.25;
+            cursor: default;
+        }
+
+        /* Pagination */
+        .page-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            padding: 8px 22px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+        .page-btn:hover:not(:disabled) { background: #2a2a2a; }
+        .page-btn:disabled { opacity: 0.3; cursor: default; }
+        #page-info {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        /* Empty state */
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1.2rem;
+        }
+
+        /* Difficulty block */
+        .diff-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        /* Instrument icon on top */
+        .diff-inst-img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+        /* Difficulty level icon on bottom */
+        .diff-level-img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+
+        .diffs-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            flex-shrink: 0;
+        }
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            /* Sort buttons: scrollable row */
+            .sort-btn {
+                padding: 7px 14px;
+                font-size: 0.8rem;
+                white-space: nowrap;
+            }
+
+            /* Letter bar: smaller, more compact */
+            .letter-btn {
+                padding: 5px 5px;
+                font-size: 0.72rem;
+                min-width: 22px;
+            }
+
+            /* Song card: stack diffs below main info */
+            .song-card {
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 10px 10px;
+            }
+
+            /* Diffs row: full width on its own line */
+            .diffs-row {
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 6px;
+                order: 3;
+            }
+
+            /* Action buttons: keep compact */
+            .yt-btn, .sp-btn {
+                padding: 6px 8px;
+                font-size: 0.68rem;
+            }
+
+            /* Song name slightly smaller */
+            .song-name {
+                font-size: 0.95rem;
+            }
+
+            /* Page buttons full-width-ish */
+            .page-btn {
+                padding: 8px 16px;
+            }
+        }
+
+        /* Instrument popup */
+        .inst-popup {
+            position: fixed;
+            z-index: 300;
+            background: var(--surface2);
+            border: 1px solid var(--primary-dim);
+            border-radius: 10px;
+            padding: 10px 14px;
+            min-width: 140px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+        .inst-popup-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        .inst-popup-diff {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .inst-popup-diff .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .dot-easy   { background: #22c55e; }
+        .dot-medium { background: #eab308; }
+        .dot-hard   { background: #f97316; }
+        .dot-expert { background: #ef4444; }
+
+        /* Level filter row */
+        .level-filter-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .level-filter-select {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+            transition: all 0.15s;
+        }
+        .level-filter-select:hover { border-color: var(--primary-dim); color: var(--text); }
+        .level-filter-select.active { border-color: var(--primary-dim); background: var(--primary-dark); color: transparent; }
+        .level-filter-select-wrap {
+            position: relative;
+            display: inline-block;
+        }
+        .level-filter-select-wrap .sel-label {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            color: #fff;
+            pointer-events: none;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .level-filter-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+        .level-filter-btn:hover { border-color: #555; color: var(--text); }
+        .level-filter-inst {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            align-self: center;
+            white-space: nowrap;
+        }
+        .diff-block {
+            cursor: pointer;
+        }
+        .diff-block:hover img.diff-inst-img {
+            filter: brightness(1.3) drop-shadow(0 0 4px var(--primary));
+        }
+        .sort-bar-wrap {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        /* Random song button */
+        .random-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--primary-dim);
+            background: var(--primary-dark);
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .random-btn:hover { background: var(--primary-dim); color: #fff; }
+
+        /* Random song modal */
+        #random-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        #random-modal.open { display: flex; }
+        #random-modal-inner {
+            background: var(--surface2);
+            border: 1px solid var(--primary-dim);
+            border-radius: 14px;
+            padding: 28px 28px 22px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+        }
+        #random-modal-inner .rm-label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        #random-modal-inner .rm-name {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 1.8rem;
+            color: #fff;
+            line-height: 1.15;
+            margin-bottom: 6px;
+        }
+        #random-modal-inner .rm-artist {
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        #random-modal-inner .rm-album {
+            font-size: .9rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+        #random-modal-inner .rm-genre {
+            font-size: 0.8rem;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        #random-modal-inner .rm-year {
+            font-size: 0.9rem; 
+            color: var(--text);
+        }
+        #random-modal-inner .rm-length {
+            font-size: 0.9rem; 
+            color: var(--text); 
+            font-style: oblique;
+            font-weight: 500;
+        }
+        #random-modal-inner .rm-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        #random-modal-inner .rm-close {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 6px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+        #random-modal-inner .rm-close:hover { color: var(--text); border-color: #555; }
+        .sort-bar-wrap::-webkit-scrollbar { display: none; }
+
+        /* Instrument sort buttons */
+        .inst-sort-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 5px 10px 5px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .inst-sort-btn img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .inst-sort-btn:hover { color: var(--text); border-color: #444; }
+        .inst-sort-btn.active {
+            background: var(--primary-dark);
+            border-color: var(--primary-dim);
+            color: #fff;
+        }
+        .inst-sort-btn .sort-arrow {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        /* No-info filter toggle */
+        .no-info-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid #5a3a1a;
+            background: #2a1a0a;
+            color: #f59e0b;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .no-info-btn:hover { border-color: #f59e0b; color: #fbbf24; }
+        .no-info-btn.active {
+            background: #78350f;
+            border-color: #f59e0b;
+            color: #fff;
+        }
+
+        /* Active filter chips */
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 4px 10px 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--primary-dim);
+            background: var(--primary-dark);
+            color: #fff;
+            white-space: nowrap;
+        }
+        .filter-chip .chip-x {
+            cursor: pointer;
+            font-size: 0.85rem;
+            opacity: 0.7;
+            line-height: 1;
+            transition: opacity 0.12s;
+        }
+        .filter-chip .chip-x:hover { opacity: 1; }
+        .filter-chip.chip-sort {
+            border-color: #444;
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        /* Uncharted badge (shown on card when no diff data) */
+        .uncharted-badge {
+            display: inline-block;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.63rem;
+            letter-spacing: 0.05em;
+            padding: 3px 7px;
+            background: #2a1a0a;
+            color: #f59e0b;
+            border: 1px solid #5a3a1a;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        /* Section label for instrument sort row */
+        .sort-section-label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            white-space: nowrap;
+            align-self: center;
+        }
+
+        /* Genre Dropdown Styling */
+        .genre-filter-wrap {
+            min-width: 140px;
+        }
+
+        #genre-select {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            appearance: none; 
+            outline: none;
+            transition: all 0.15s;
+        }
+
+        #genre-select:hover {
+            border-color: var(--primary-dim);
+            color: var(--text);
+        }
+
+        #genre-select:focus {
+            border-color: var(--primary);
+            background: var(--surface);
+        }
+
+        @media (max-width: 600px) {
+            .genre-filter-wrap {
+                width: 100%; 
+                order: 2;    
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="max-width: 900px; margin: 0 auto; padding: 24px 16px;">
+
+        <header style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h1 id="app-name" style="font-size: 2rem; margin: 0;"></h1>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <button class="random-btn" id="random-btn" onclick="randomSong()">🎲 Random Song</button>
+                <button class="random-btn" id="theme-btn" onclick="toggleThemePanel()" style="border-color: var(--border); background: var(--surface2); color: var(--muted);">🎨 Theme</button>
+                <div id="stats" style="font-family: 'Barlow Condensed', sans-serif; font-size:0.8rem; color: var(--muted); letter-spacing:0.05em;"></div>
+            </div>
+        </header>
+
+        <!-- Search + Sort bar -->
+        <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="search" placeholder="Search artist, song or album…"
+                   style="flex: 1; min-width: 180px; padding: 10px 16px; border-radius: 10px;">
+
+            <div class="sort-bar-wrap">
+                <button class="sort-btn active" id="sort-artist" onclick="setSort('artist')">By Artist</button>
+                <button class="sort-btn" id="sort-song" onclick="setSort('song')">By Song</button>
+                <button class="sort-btn" id="sort-album" onclick="setSort('album')">By Album</button>
+            </div>
+
+            <div class="genre-filter-wrap">
+                <select id="genre-select" onchange="applySortAndFilter()">
+                    <option value="">All Genres</option>
+                    </select>
+            </div>
+        </div>
+
+        <!-- Instrument filter + sort + level filter row -->
+        <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; align-items: center;">
+            <span class="sort-section-label">Filter by:</span>
+            <select id="inst-filter-select" onchange="onInstFilterAdd(this)" style="
+                background: var(--surface2); border: 1px solid var(--border);
+                color: var(--muted); font-family: 'Barlow Condensed',sans-serif;
+                font-weight: 700; font-size: 0.82rem; text-transform: uppercase;
+                padding: 6px 12px; border-radius: 6px; cursor: pointer;
+                outline: none; transition: all 0.15s; appearance: none;
+            ">
+                <option value="">By instrument</option>
+            </select>
+            <span class="sort-section-label">Sort by:</span>
+            <select id="inst-sort-select" onchange="onInstSortChange(this.value)" style="
+                background: var(--surface2); border: 1px solid var(--border);
+                color: var(--muted); font-family: 'Barlow Condensed',sans-serif;
+                font-weight: 700; font-size: 0.82rem; text-transform: uppercase;
+                padding: 6px 12px; border-radius: 6px; cursor: pointer;
+                outline: none; transition: all 0.15s; appearance: none;
+            ">
+                <option value="">By Intensity</option>
+            </select>
+            <button id="inst-dir-btn" onclick="toggleInstSortDir()" style="display:none;
+                background: var(--surface2); border: 1px solid var(--border);
+                color: var(--muted); font-family: 'Barlow Condensed',sans-serif;
+                font-weight: 700; font-size: 0.82rem; padding: 6px 10px;
+                border-radius: 6px; cursor: pointer; transition: all 0.15s;
+            ">▼</button>
+            <span class="sort-section-label">Difficulty</span>
+            <select id="level-add-select" onchange="onLevelFilterAdd(this)" style="
+                background: var(--surface2); border: 1px solid var(--border);
+                color: var(--muted); font-family: 'Barlow Condensed',sans-serif;
+                font-weight: 700; font-size: 0.82rem; text-transform: uppercase;
+                padding: 6px 12px; border-radius: 6px; cursor: pointer;
+                outline: none; transition: all 0.15s; appearance: none;
+            ">
+                <option value="">Filter by level…</option>
+            </select>
+            <button id="no-info-btn" class="no-info-btn" onclick="toggleNoInfo()">⚠️ No Info</button>
+        </div>
+        <!-- Active filter chips -->
+        <div id="active-chips" style="display:none; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
+
+        <!-- Letter jump bar -->
+        <div id="letter-bar"></div>
+
+        <div id="song-list"></div>
+
+        <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:32px; padding-bottom:40px; flex-wrap:wrap;">
+            <button class="page-btn" id="prev-btn">← Prev</button>
+
+            <span id="page-info">Page 1 of 1</span>
+
+            <button class="page-btn" id="next-btn">Next →</button>
+
+            <input id="page-input" type="number" min="1"
+                placeholder="Page"
+                style="width:70px; padding:6px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text);">
+
+            <button class="page-btn" onclick="goToPage()">Go</button>
+        </div>
+    </div>
+
+    <!-- Instrument difficulty popup -->
+    <div id="inst-popup" class="inst-popup" style="display:none;">
+        <div class="inst-popup-title" id="inst-popup-title"></div>
+        <div id="inst-popup-body"></div>
+    </div>
+
+    <!-- Theme panel -->
+    <div id="theme-panel" style="
+        display: none;
+        position: fixed;
+        top: 0; right: 0;
+        width: 280px;
+        height: 100%;
+        background: var(--surface2);
+        border-left: 1px solid var(--border);
+        z-index: 200;
+        overflow-y: auto;
+        padding: 24px 20px 40px;
+        box-shadow: -6px 0 32px rgba(0,0,0,0.5);
+    ">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+            <span style="font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.2rem; letter-spacing:0.05em; color:var(--text);">🎨 THEME</span>
+            <button onclick="toggleThemePanel()" style="background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; line-height:1;">✕</button>
+        </div>
+
+        <div id="theme-pickers" style="display:flex; flex-direction:column; gap:12px;"></div>
+
+        <div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
+            <button onclick="resetTheme()" style="
+                font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.85rem;
+                letter-spacing:0.05em; text-transform:uppercase;
+                padding:8px 16px; border-radius:8px;
+                border:1px solid var(--border); background:var(--surface); color:var(--muted);
+                cursor:pointer; transition:all 0.15s;
+            " onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↩ Reset to Default</button>
+
+            <button onclick="exportTheme()" style="
+                font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.85rem;
+                letter-spacing:0.05em; text-transform:uppercase;
+                padding:8px 16px; border-radius:8px;
+                border:1px solid var(--primary-dim); background:var(--primary-dark); color:var(--primary);
+                cursor:pointer; transition:all 0.15s;
+            ">⬇ Export config.json</button>
+        </div>
+
+        <p style="font-family:'Barlow',sans-serif; font-size:0.72rem; color:var(--muted); margin-top:16px; line-height:1.5;">
+            Colors are saved in your browser. Use <strong style="color:var(--text)">Export</strong> to update <code>config.json</code>.
+        </p>
+    </div>
+    <div id="theme-backdrop" onclick="toggleThemePanel()" style="display:none; position:fixed; inset:0; z-index:199; background:rgba(0,0,0,0.3);"></div>
+
+    <!-- Random song modal -->
+    <div id="random-modal">
+        <div id="random-modal-inner">
+            <div class="rm-label">🎲 Random Pick</div>
+            <div class="rm-name" id="rm-name"></div>
+            <div class="rm-artist" id="rm-artist"></div>
+            <div class="rm-album" id="rm-album"></div>
+            <div class="rm-genre" id="rm-genre"></div>
+            <div class="rm-song-meta-row" id="rm-song-meta-row" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; margin-top: -5px;">
+                <div class="rm-year" id="rm-year"></div>
+                <div class="rm-length" id="rm-length"></div>
+            </div>
+            <div id="rm-diffs" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:14px;"></div>
+            <div class="rm-actions">
+                <a id="rm-sp" href="#" target="_blank" rel="noopener" class="sp-btn">▶ Spotify</a>
+                <a id="rm-yt" href="#" target="_blank" rel="noopener" class="yt-btn">▶ YouTube</a>
+                <button class="random-btn" onclick="randomSong()">🎲 Reroll</button>
+            </div>
+            <button class="rm-close" onclick="closeRandom()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let allSongs = [];
+        let filteredSongs = [];
+        let currentPage = 1;
+        let sortMode = 'artist';
+        let instSortKey = null;   
+        let instSortDir = 'desc';
+        let activeLetter = null;
+        const PER_PAGE = 50;
+
+        const listEl   = document.getElementById('song-list');
+        const statsEl  = document.getElementById('stats');
+        const pageInfo = document.getElementById('page-info');
+        const prevBtn  = document.getElementById('prev-btn');
+        const nextBtn  = document.getElementById('next-btn');
+        const searchEl = document.getElementById('search');
+        const letterBar = document.getElementById('letter-bar');
+        const genreSelect = document.getElementById('genre-select');
+
+
+        const INSTRUMENTS = [
+            { key: 'diff_guitar',           img: 'resources/instruments/guitar.png',      label: 'Guitar' },
+            { key: 'diff_rhythm',           img: 'resources/instruments/rhythm.png',      label: 'Rhythm' },
+            { key: 'diff_bass',             img: 'resources/instruments/bass.png',        label: 'Bass' },
+            { key: 'diff_guitar_coop',      img: 'resources/instruments/coop.png',        label: 'Co-op' },
+            { key: 'diff_drums',            img: 'resources/instruments/drums.png',       label: 'Drums' },
+            { key: 'diff_drums_real',       img: 'resources/instruments/drums_pro.png',   label: 'Pro Drums' },
+            { key: 'diff_keys',             img: 'resources/instruments/keys.png',        label: 'Keys' },
+            { key: 'diff_guitarghl',        img: 'resources/instruments/guitarghl.png',  label: 'Guitar-Live' },
+            { key: 'diff_bassghl',          img: 'resources/instruments/bassghl.png',    label: 'Bass-Live' },
+            { key: 'diff_rhythm_ghl',       img: 'resources/instruments/rhythmghl.png',  label: 'Rhythm-Live' },
+            { key: 'diff_guitar_coop_ghl',  img: 'resources/instruments/guitarcoopghl.png',    label: 'Guitar Co-op-Live' },
+        ];
+
+        // Difficulty PNG filenames per level 0–6
+        const DIFF_IMGS = [
+            'resources/intensity/0.png',
+            'resources/intensity/1.png',
+            'resources/intensity/2.png',
+            'resources/intensity/3.png',
+            'resources/intensity/4.png',
+            'resources/intensity/5.png',
+            'resources/intensity/6.png',
+        ];
+
+        let filterNoInfo = false;
+        // Level filter: { instLabel: Set of difficulty strings } e.g. { Guitar: Set(['Expert']) }
+        let levelFilter = {};
+        // Instrument filter: Set of diff_* keys
+        let instFilter = new Set();
+
+        // ── Instrument filter dropdown (multi, like level filter) ──
+        function buildInstFilterDropdown() {
+            const sel = document.getElementById('inst-filter-select');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Instrument</option>';
+            INSTRUMENTS.forEach(inst => {
+                if (instFilter.has(inst.key)) return; // already active
+                const opt = document.createElement('option');
+                opt.value = inst.key;
+                opt.textContent = inst.label;
+                sel.appendChild(opt);
+            });
+        }
+
+        function onInstFilterAdd(sel) {
+            const key = sel.value;
+            if (!key) return;
+            instFilter.add(key);
+            sel.value = '';
+            buildInstFilterDropdown();
+            buildChips();
+            applySortAndFilter();
+        }
+
+        function removeInstFilterChip(key) {
+            instFilter.delete(key);
+            buildInstFilterDropdown();
+            buildChips();
+            applySortAndFilter();
+        }
+
+        // ── Instrument sort dropdown ─────────────────────────────
+        function buildInstSortDropdown() {
+            const sel = document.getElementById('inst-sort-select');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Intensity</option>';
+            INSTRUMENTS.forEach(inst => {
+                const opt = document.createElement('option');
+                opt.value = inst.key;
+                opt.textContent = inst.label;
+                if (instSortKey === inst.key) opt.selected = true;
+                sel.appendChild(opt);
+            });
+            const active = !!instSortKey;
+            sel.style.borderColor = active ? 'var(--primary-dim)' : 'var(--border)';
+            sel.style.color       = active ? '#fff' : 'var(--muted)';
+            sel.style.background  = active ? 'var(--primary-dark)' : 'var(--surface2)';
+            // Show/hide direction toggle button
+            const dirBtn = document.getElementById('inst-dir-btn');
+            if (dirBtn) {
+                dirBtn.style.display = active ? '' : 'none';
+                dirBtn.textContent = instSortDir === 'desc' ? '▼' : '▲';
+                dirBtn.title = instSortDir === 'desc' ? 'Hardest first (click to reverse)' : 'Easiest first (click to reverse)';
+            }
+        }
+
+        function onInstSortChange(key) {
+            if (!key) {
+                instSortKey = null;
+                instSortDir = 'desc';
+                sortMode = 'artist';
+                document.getElementById('sort-artist').classList.add('active');
+            } else {
+                instSortKey = key;
+                instSortDir = 'desc';
+                sortMode = null;
+                ['sort-artist','sort-song','sort-album'].forEach(id =>
+                    document.getElementById(id).classList.remove('active'));
+            }
+            activeLetter = null;
+            buildInstSortDropdown();
+            buildChips();
+            applySortAndFilter();
+        }
+
+        function toggleInstSortDir() {
+            instSortDir = instSortDir === 'desc' ? 'asc' : 'desc';
+            buildInstSortDropdown();
+            buildChips();
+            applySortAndFilter();
+        }
+
+        function toggleNoInfo() {
+            filterNoInfo = !filterNoInfo;
+            document.getElementById('no-info-btn').classList.toggle('active', filterNoInfo);
+            buildChips();
+            applySortAndFilter();
+        }
+
+        function setInstSort(key) { onInstSortChange(key); }
+
+        const LETTERS = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+        function buildLetterBar(availableLetters) {
+            letterBar.innerHTML = '';
+
+            // "All" button
+            const all = document.createElement('button');
+            all.className = 'letter-btn' + (activeLetter === null ? ' active' : '');
+            all.textContent = 'ALL';
+            all.onclick = () => { activeLetter = null; applySortAndFilter(); };
+            letterBar.appendChild(all);
+
+            LETTERS.forEach(l => {
+                const btn = document.createElement('button');
+                const has = availableLetters.has(l);
+                btn.className = 'letter-btn' + (!has ? ' disabled' : '') + (activeLetter === l ? ' active' : '');
+                btn.textContent = l;
+                if (has) {
+                    btn.onclick = () => { activeLetter = l; applySortAndFilter(); };
+                }
+                letterBar.appendChild(btn);
+            });
+        }
+
+        function getFirstLetter(s) {
+            if (instSortKey) return null; // no letter grouping for instrument sort
+            let key = '';
+            if (sortMode === 'song')  key = s.name;
+            else if (sortMode === 'album') key = s.album || '';
+            else key = s.artist;
+            const c = key.trim()[0] || '';
+            const up = c.toUpperCase();
+            if (up >= 'A' && up <= 'Z') return up;
+            if (c >= '0' && c <= '9') return '#';
+            return '#';
+        }
+
+        // ── Sorting ──────────────────────────────────────────────
+        function sortKey(s) {
+            // sorting by a specific instrument
+            if (instSortKey) {
+                const v = s[instSortKey];
+                const n = (v !== undefined && v !== null && v !== '') ? parseInt(v) : -1;
+                // Returning negative n for 'desc' ensures higher numbers (harder) come first
+                return instSortDir === 'desc' ? -n : n;
+            }
+
+            // Default sorting modes
+            if (sortMode === 'song')   return s.name.toLowerCase();
+            if (sortMode === 'album')  return (s.album || '').toLowerCase();
+            return s.artist.toLowerCase();
+        }
+
+        function hasNoInstInfo(s) {
+            const hasDiffKey = INSTRUMENTS.some(inst => {
+                const v = s[inst.key];
+                return v !== undefined && v !== null && v !== '' && v !== -1 && v !== '-1';
+            });
+            const hasLevelData = INSTRUMENTS.some(inst =>
+                (s.playable_levels || {})[inst.label]?.length > 0
+            );
+            return !hasDiffKey && !hasLevelData;
+        }
+
+        function applySortAndFilter() {
+            const term = searchEl.value.toLowerCase().trim();
+            const selectedGenre = genreSelect.value; 
+
+            // 1. Filter the pool
+            filteredSongs = allSongs.filter(s => {
+                const matchesSearch = !term || 
+                    s.name.toLowerCase().includes(term) ||
+                    s.artist.toLowerCase().includes(term) ||
+                    (s.album || '').toLowerCase().includes(term);
+
+                const matchesGenre = !selectedGenre || s.genre === selectedGenre;
+
+                let matchesNoInfo = true;
+                if (filterNoInfo) {
+                    matchesNoInfo = hasNoInstInfo(s);
+                }
+
+                return matchesSearch && matchesGenre && matchesNoInfo && songMatchesLevelFilter(s) && songMatchesInstFilter(s);
+            });
+
+            // 2. Sort the filtered pool
+            filteredSongs.sort((a, b) => {
+                let valA = sortKey(a);
+                let valB = sortKey(b);
+                if (valA < valB) return -1;
+                if (valA > valB) return 1;
+                return 0;
+            });
+
+            // 3. Update Letter Jump Bar
+            const available = new Set();
+            filteredSongs.forEach(s => {
+                const l = getFirstLetter(s);
+                if (l) available.add(l);
+            });
+            buildLetterBar(available);
+
+            // 4. Handle Letter Jump Selection
+            if (activeLetter) {
+                filteredSongs = filteredSongs.filter(s => getFirstLetter(s) === activeLetter);
+            }
+
+            // 5. Reset to page 1 and Render
+            currentPage = 1;
+            render();
+        }
+
+        function setSort(mode) {
+            sortMode = mode;
+            instSortKey = null;
+            activeLetter = null;
+            document.getElementById('sort-artist').classList.toggle('active', mode === 'artist');
+            document.getElementById('sort-song').classList.toggle('active', mode === 'song');
+            document.getElementById('sort-album').classList.toggle('active', mode === 'album');
+            buildInstSortDropdown();
+            buildChips();
+            applySortAndFilter();
+        }
+
+        // ── Instrument popup ─────────────────────────────────────
+        const DIFF_COLORS = { Easy: 'dot-easy', Medium: 'dot-medium', Hard: 'dot-hard', Expert: 'dot-expert' };
+        const DIFF_ORDER   = ['Easy', 'Medium', 'Hard', 'Expert'];
+        const popup        = document.getElementById('inst-popup');
+        const popupTitle   = document.getElementById('inst-popup-title');
+        const popupBody    = document.getElementById('inst-popup-body');
+        let   popupTimeout = null;
+
+        function showInstPopup(e, inst, song) {
+            const levels = (song.playable_levels || {})[inst.label] || [];
+
+            popupTitle.textContent = inst.label;
+            if (!levels.length) {
+                popupBody.innerHTML = `<div style="color:var(--muted);font-size:0.8rem;">No level data</div>`;
+            } else {
+                popupBody.innerHTML = DIFF_ORDER
+                    .filter(d => levels.includes(d))
+                    .map(d => `<div class="inst-popup-diff">
+                        <span class="dot ${DIFF_COLORS[d]}"></span>
+                        <span style="color:var(--text)">${d}</span>
+                    </div>`).join('');
+            }
+
+            // Position near the cursor, keep inside viewport
+            const x = Math.min(e.clientX + 14, window.innerWidth  - 170);
+            const y = Math.min(e.clientY + 14, window.innerHeight - 150);
+            popup.style.left = x + 'px';
+            popup.style.top  = y + 'px';
+            popup.style.display = 'block';
+            clearTimeout(popupTimeout);
+        }
+
+        function hideInstPopup() {
+            popupTimeout = setTimeout(() => { popup.style.display = 'none'; }, 80);
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.diff-block')) popup.style.display = 'none';
+        });
+
+        // ── Difficulty blocks (PNG icons) ────────────────────────
+        function diffBlock(song, inst) {
+            if (inst.key === 'no_info') return '';
+
+            const raw = song[inst.key];
+            const val = (raw !== undefined && raw !== null && raw !== '') ? parseInt(raw) : -1;
+
+            // Check if playable_levels has data for this instrument even if no intensity
+            const hasLevels = (song.playable_levels || {})[inst.label]?.length > 0;
+
+            // Skip entirely if neither intensity nor level data is available
+            if (val < 0 && !hasLevels) return '';
+
+            const songIdx = allSongs.indexOf(song);
+
+            // Intensity image: only shown when a valid value (0–6) exists
+            const intensityHtml = val >= 0
+                ? `<img class="diff-level-img" src="${DIFF_IMGS[Math.min(6, val)]}" alt="Difficulty ${val}">`
+                : `<img class="diff-level-img" src="resources/intensity/no-lvl.png" alt="No intensity">`;
+
+            return `
+                <div class="diff-block" title="Click to see charted levels"
+                     onmouseenter="showInstPopup(event, INSTRUMENTS.find(i=>i.key==='${inst.key}'), allSongs[${songIdx}])"
+                     onmouseleave="hideInstPopup()"
+                     onclick="event.stopPropagation(); showInstPopup(event, INSTRUMENTS.find(i=>i.key==='${inst.key}'), allSongs[${songIdx}])">
+                    <img class="diff-inst-img" src="${inst.img}" alt="${inst.label}">
+                    ${intensityHtml}
+                </div>`;
+        }
+
+        // ── Level filter ─────────────────────────────────────────
+        // levelFilter shape: { "Guitar": Set(["Expert"]), "Drums": Set(["Hard","Expert"]) }
+
+        // Collect every instrument+level combo present in the full catalog
+        function getAvailableLevels() {
+            const result = {}; // { instLabel: Set of diffs }
+            allSongs.forEach(s => {
+                const pl = s.playable_levels || {};
+                Object.entries(pl).forEach(([inst, diffs]) => {
+                    if (!result[inst]) result[inst] = new Set();
+                    diffs.forEach(d => result[inst].add(d));
+                });
+            });
+            return result;
+        }
+
+        // ── Level filter dropdown (single select, adds chips) ───
+        function buildLevelFilterDropdown() {
+            const sel = document.getElementById('level-add-select');
+            if (!sel) return;
+            const available = getAvailableLevels();
+            sel.innerHTML = '<option value="">Difficulty</option>';
+            INSTRUMENTS.forEach(inst => {
+                const diffs = available[inst.label];
+                if (!diffs) return;
+                const grp = document.createElement('optgroup');
+                grp.label = inst.label;
+                DIFF_ORDER.forEach(diff => {
+                    if (!diffs.has(diff)) return;
+                    // Skip already-active combos
+                    if (levelFilter[inst.label]?.has(diff)) return;
+                    const opt = document.createElement('option');
+                    opt.value = inst.label + '|' + diff;
+                    opt.textContent = diff;
+                    grp.appendChild(opt);
+                });
+                if (grp.children.length) sel.appendChild(grp);
+            });
+        }
+
+        function onLevelFilterAdd(sel) {
+            const val = sel.value;
+            if (!val) return;
+            const [instLabel, diff] = val.split('|');
+            if (!levelFilter[instLabel]) levelFilter[instLabel] = new Set();
+            levelFilter[instLabel].add(diff);
+            sel.value = '';
+            buildLevelFilterDropdown();
+            buildChips();
+            applySortAndFilter();
+        }
+
+        function removeLevelChip(instLabel, diff) {
+            if (levelFilter[instLabel]) {
+                levelFilter[instLabel].delete(diff);
+                if (levelFilter[instLabel].size === 0) delete levelFilter[instLabel];
+            }
+            buildLevelFilterDropdown();
+            buildChips();
+            applySortAndFilter();
+        }
+
+        // ── Active chips ─────────────────────────────────────────
+        function buildChips() {
+            const wrap = document.getElementById('active-chips');
+            wrap.innerHTML = '';
+
+            // Instrument filter chips (multi)
+            instFilter.forEach(key => {
+                const inst = INSTRUMENTS.find(i => i.key === key);
+                const chip = document.createElement('span');
+                chip.className = 'filter-chip';
+                chip.innerHTML = `${inst ? inst.label : key} <span class="chip-x" onclick="removeInstFilterChip('${key}')">×</span>`;
+                wrap.appendChild(chip);
+            });
+
+            // Instrument sort chip — direction is clickable to toggle
+            if (instSortKey) {
+                const inst = INSTRUMENTS.find(i => i.key === instSortKey);
+                const dir = instSortDir === 'desc' ? '▼' : '▲';
+                const chip = document.createElement('span');
+                chip.className = 'filter-chip chip-sort';
+                chip.innerHTML = `Sort: ${inst ? inst.label : instSortKey} <span onclick="toggleInstSortDir()" title="Toggle direction" style="cursor:pointer;opacity:0.85;margin:0 2px;">${dir}</span> <span class="chip-x" onclick="onInstSortChange('')">×</span>`;
+                wrap.appendChild(chip);
+            }
+
+            // No-info chip
+            if (filterNoInfo) {
+                const chip = document.createElement('span');
+                chip.className = 'filter-chip chip-sort';
+                chip.innerHTML = `⚠️ No Info <span class="chip-x" onclick="toggleNoInfo()">×</span>`;
+                wrap.appendChild(chip);
+            }
+
+            // Level filter chips
+            Object.entries(levelFilter).forEach(([instLabel, diffs]) => {
+                diffs.forEach(diff => {
+                    const chip = document.createElement('span');
+                    chip.className = 'filter-chip';
+                    chip.innerHTML = `${instLabel} · ${diff} <span class="chip-x" onclick="removeLevelChip('${instLabel.replace(/'/g,"\\'")}','${diff}')">×</span>`;
+                    wrap.appendChild(chip);
+                });
+            });
+
+            wrap.style.display = wrap.children.length ? 'flex' : 'none';
+        }
+
+        function buildLevelFilterRow() { buildInstFilterDropdown(); buildLevelFilterDropdown(); buildChips(); }
+
+        function toggleLevelFilter(instLabel, diff) {
+            if (!levelFilter[instLabel]) levelFilter[instLabel] = new Set();
+            if (levelFilter[instLabel].has(diff)) {
+                levelFilter[instLabel].delete(diff);
+                if (levelFilter[instLabel].size === 0) delete levelFilter[instLabel];
+            } else {
+                levelFilter[instLabel].add(diff);
+            }
+            buildLevelFilterDropdown();
+            buildChips();
+            applySortAndFilter();
+        }
+
+        function songMatchesLevelFilter(song) {
+            if (Object.keys(levelFilter).length === 0) return true;
+            const pl = song.playable_levels || {};
+            return Object.entries(levelFilter).every(([instLabel, diffs]) => {
+                const songDiffs = pl[instLabel] || [];
+                return [...diffs].some(d => songDiffs.includes(d));
+            });
+        }
+
+        function songMatchesInstFilter(song) {
+            if (instFilter.size === 0) return true;
+            // Song must have at least one of the selected instruments charted
+            return [...instFilter].some(key => {
+                const inst = INSTRUMENTS.find(i => i.key === key);
+                const hasDiffKey = song[key] !== undefined && song[key] !== null && song[key] !== '' && parseInt(song[key]) >= 0;
+                const hasLevels = inst && (song.playable_levels || {})[inst.label]?.length > 0;
+                return hasDiffKey || hasLevels;
+            });
+        
+
+
+            if (Object.keys(levelFilter).length === 0) return true;
+            const pl = song.playable_levels || {};
+            // Song must satisfy ALL active instrument filters
+            return Object.entries(levelFilter).every(([instLabel, diffs]) => {
+                const songDiffs = pl[instLabel] || [];
+                // Song must have at least one of the selected difficulties for this instrument
+                return [...diffs].some(d => songDiffs.includes(d));
+            });
+        }
+
+        function groupLabel(s) {
+
+            if (filterNoInfo) return "Uncharted Songs"; // Label for when the filter is active
+            
+            if (instSortKey) {
+                const inst = INSTRUMENTS.find(i => i.key === instSortKey);
+                const v = s[instSortKey];
+                const n = (v !== undefined && v !== null && v !== '') ? parseInt(v) : -1;
+                const label = inst ? inst.label : instSortKey;
+                if (n < 0) return `${label}: Uncharted`;
+                return `${label}: ${n}/6`;
+            }
+            if (sortMode === 'song')  return s.name[0]?.toUpperCase() || '#';
+            if (sortMode === 'album') return (s.album || '—')[0].toUpperCase();
+            return s.artist[0]?.toUpperCase() || '#';
+        }
+
+        function render() {
+            const total = filteredSongs.length;
+            const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+            const start = (currentPage - 1) * PER_PAGE;
+            const page  = filteredSongs.slice(start, start + PER_PAGE);
+
+            if (!page.length) {
+                listEl.innerHTML = '<div class="empty">No songs found 🎵</div>';
+            } else {
+                const chunks = [];
+                let lastLabel = null;
+
+                page.forEach((s, i) => {
+                    const label = groupLabel(s);
+                    if (label !== lastLabel) {
+                        chunks.push(`<div class="group-header">${label}</div>`);
+                        lastLabel = label;
+                    }
+
+                    const q   = encodeURIComponent(`${s.artist} ${s.name}`);
+                    const sp  = encodeURIComponent(`${s.artist} ${s.name}`);
+                    const idx = start + i + 1;
+
+                    // Build difficulty row — only show instruments that exist
+                    let diffsHtml = '';
+                    INSTRUMENTS.forEach(inst => {
+                        diffsHtml += diffBlock(s, inst);
+                    });
+                    const hasDiffs = diffsHtml.trim().length > 0;
+                    const unchartedBadge = !hasDiffs ? '<span class="uncharted-badge">⚠ No Instrument Info</span>' : '';
+
+                    chunks.push(`
+                        <div class="song-card">
+                            <div style="flex:1; min-width:0;">
+                                <div class="song-name">${esc(s.name)}</div>
+                                <div class="song-artist">${esc(s.artist)}</div>
+                                ${s.album ? `<div class="song-album">${esc(s.album)}</div>` : ''}
+                                <div class="song-genre">${esc(s.genre)}</div>
+                                <div class="song-meta-row">
+                                    ${s.year ? `<div class="song-year" style="font-size: 0.7rem; color: var(--text);">${esc(s.year)}</div>` : ''}
+                                    <div class="song-lenght"> ${esc(s.lenght)}</div>
+                                    ${s.video_avail === 'True' ? '<div class="video-badge">Video ✅</div>' : ''}
+                                    ${unchartedBadge}
+                                </div>
+                            </div>
+                            ${hasDiffs ? `<div class="diffs-row">${diffsHtml}</div>` : ''}
+                            <div style="display:flex; gap:6px; flex-shrink:0;">
+                                <a href="https://open.spotify.com/search/${sp}" target="_blank" rel="noopener" class="sp-btn">▶ SP</a>
+                                <a href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener" class="yt-btn">▶ YT</a>
+                            </div>
+                        </div>
+                    `);
+                });
+
+                listEl.innerHTML = chunks.join('');
+            }
+
+            let sortLabel = instSortKey
+                ? `${INSTRUMENTS.find(i=>i.key===instSortKey)?.label || instSortKey} (${instSortDir === 'desc' ? 'hardest first' : 'easiest first'})`
+                : `sorted by ${sortMode}`;
+            const noInfoLabel = instSortKey === 'no_info' ? ' · no-info filter' : '';
+            statsEl.textContent = `${total} song${total !== 1 ? 's' : ''} · ${sortLabel}${noInfoLabel}`;
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage >= totalPages;
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+
+        function esc(str) {
+            return String(str)
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        // ── Events ───────────────────────────────────────────────
+        searchEl.addEventListener('input', () => { activeLetter = null; applySortAndFilter(); });
+
+        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; render(); } };
+        nextBtn.onclick = () => {
+            const max = Math.ceil(filteredSongs.length / PER_PAGE);
+            if (currentPage < max) { currentPage++; render(); }
+        };
+
+        // ── Random song ──────────────────────────────────────────
+        function randomSong() {
+            if (!allSongs.length) return;
+            const s = allSongs[Math.floor(Math.random() * allSongs.length)];
+            const q = encodeURIComponent(`${s.artist} ${s.name}`);
+            document.getElementById('rm-name').textContent   = s.name;
+            document.getElementById('rm-artist').textContent = s.artist;
+            const albumEl = document.getElementById('rm-album');
+            albumEl.textContent = s.album || '';
+            albumEl.style.display = s.album ? '' : 'none';
+            document.getElementById('rm-yt').href = `https://www.youtube.com/results?search_query=${q}`;
+            document.getElementById('rm-sp').href = `https://open.spotify.com/search/${q}`;
+            
+            const yearEl = document.getElementById('rm-year');
+            yearEl.textContent = s.year || '';
+            yearEl.style.display = s.year ? '' : 'none';
+
+            const lengthEl = document.getElementById('rm-length'); 
+            lengthEl.textContent = s.lenght || ''; 
+
+            const genreEl = document.getElementById('rm-genre');
+            genreEl.textContent = s.genre || '';
+            genreEl.style.display = s.genre ? '' : 'none';
+
+            // Build difficulty icons
+            let diffsHtml = '';
+            INSTRUMENTS.forEach(inst => {
+                diffsHtml += diffBlock(s, inst);
+            });
+
+            const diffsEl = document.getElementById('rm-diffs');
+
+            // Show or hide depending if there are difficulties
+            if (diffsHtml.trim().length > 0) {
+                diffsEl.innerHTML = diffsHtml;
+                diffsEl.style.display = 'flex';
+            } else {
+                diffsEl.style.display = 'none';
+            }
+            document.getElementById('random-modal').classList.add('open');
+        }
+
+        function closeRandom() {
+            document.getElementById('random-modal').classList.remove('open');
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('random-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeRandom();
+        });
+
+        function goToPage() {
+            const input = document.getElementById('page-input');
+            const val = parseInt(input.value);
+
+            const max = Math.ceil(filteredSongs.length / PER_PAGE);
+
+            if (!val || val < 1 || val > max) return;
+
+            currentPage = val;
+            render();
+        }
+
+        // ── Config ───────────────────────────────────────────────
+        async function loadConfig() {
+            try {
+                const res = await fetch('config.json');
+                const cfg = await res.json();
+
+                // Apply colors to :root
+                const root = document.documentElement.style;
+                const c = cfg.colors || {};
+                if (c.primary)     root.setProperty('--primary',      c.primary);
+                if (c.primaryDim)  root.setProperty('--primary-dim',  c.primaryDim);
+                if (c.primaryDark) root.setProperty('--primary-dark', c.primaryDark);
+                if (c.bg)          root.setProperty('--bg',           c.bg);
+                if (c.surface)     root.setProperty('--surface',      c.surface);
+                if (c.surface2)    root.setProperty('--surface2',     c.surface2);
+                if (c.border)      root.setProperty('--border',       c.border);
+                if (c.text)        root.setProperty('--text',         c.text);
+                if (c.muted)       root.setProperty('--muted',        c.muted);
+                if (c['song-name']) root.setProperty('--song-name', c['song-name']);
+
+                // Store defaults so the Reset button can restore them
+                configDefaults = c;
+
+                // Apply tab title
+                if (cfg.tabTitle) document.title = cfg.tabTitle;
+
+                // Apply app name (supports inner HTML with <span> for coloured part)
+                const h1 = document.getElementById('app-name');
+                if (h1 && cfg.appName) {
+                    h1.innerHTML = cfg.appName;
+                    // If the appName has a <span>, colour it with --primary automatically
+                    const span = h1.querySelector('span');
+                    if (span) span.style.color = 'var(--primary)';
+                }
+            } catch (e) {
+                console.warn('config.json not found or invalid — using CSS defaults.', e);
+            }
+        }
+
+        // ── Init ─────────────────────────────────────────────────
+        // Update the Init function to load genres
+        async function init() {
+            try {
+                // Fetch Songs
+                const resSongs = await fetch('data.json');
+                allSongs = await resSongs.json();
+
+                // Fetch Genres
+                const resGenres = await fetch('genres.json');
+                genres = await resGenres.json();
+                
+                // Populate Dropdown
+                genres.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g;
+                    opt.textContent = g;
+                    genreSelect.appendChild(opt);
+                });
+
+                applySortAndFilter();
+                buildInstFilterDropdown();
+                buildInstSortDropdown();
+                buildLevelFilterRow();
+            } catch (e) {
+                listEl.innerHTML = '<div class="empty"> Could not load data files</div>';
+            }
+        }
+
+        // ── Theme panel ──────────────────────────────────────────
+        const THEME_VARS = [
+            { key: '--primary',      label: 'Primary',       configKey: 'primary'     },
+            { key: '--primary-dim',  label: 'Primary Dim',   configKey: 'primaryDim'  },
+            { key: '--primary-dark', label: 'Primary Dark',  configKey: 'primaryDark' },
+            { key: '--bg',           label: 'Background',    configKey: 'bg'          },
+            { key: '--surface',      label: 'Surface',       configKey: 'surface'     },
+            { key: '--surface2',     label: 'Surface 2',     configKey: 'surface2'    },
+            { key: '--border',       label: 'Border',        configKey: 'border'      },
+            { key: '--text',         label: 'Text',          configKey: 'text'        },
+            { key: '--muted',        label: 'Muted Text',    configKey: 'muted'       },
+        ];
+
+        const STORAGE_KEY = 'mevami-theme';
+        let configDefaults = {}; // colors from config.json, populated in loadConfig
+
+        function buildThemePickers() {
+            const container = document.getElementById('theme-pickers');
+            container.innerHTML = '';
+            THEME_VARS.forEach(({ key, label }) => {
+                const current = getComputedStyle(document.documentElement)
+                    .getPropertyValue(key).trim() || '#000000';
+
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:10px;';
+
+                const lbl = document.createElement('label');
+                lbl.textContent = label;
+                lbl.style.cssText = "font-family:'Barlow Condensed',sans-serif; font-size:0.85rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; flex:1;";
+
+                const picker = document.createElement('input');
+                picker.type = 'color';
+                picker.value = normalizeHex(current);
+                picker.dataset.varKey = key;
+                picker.style.cssText = 'width:40px; height:32px; border:none; border-radius:6px; cursor:pointer; background:none; padding:0;';
+                picker.addEventListener('input', e => {
+                    applyThemeVar(key, e.target.value);
+                    saveTheme();
+                });
+
+                row.appendChild(lbl);
+                row.appendChild(picker);
+                container.appendChild(row);
+            });
+        }
+
+        // css variables can return 'rgb(...)' — convert to hex for the color input
+        function normalizeHex(val) {
+            val = val.trim();
+            if (val.startsWith('#')) return val.length === 4
+                ? '#' + [...val.slice(1)].map(c => c+c).join('')
+                : val;
+            const m = val.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+            if (m) return '#' + [m[1],m[2],m[3]].map(n => parseInt(n).toString(16).padStart(2,'0')).join('');
+            return '#000000';
+        }
+
+        function applyThemeVar(key, value) {
+            document.documentElement.style.setProperty(key, value);
+        }
+
+        function applyThemeObject(colors) {
+            THEME_VARS.forEach(({ key, configKey }) => {
+                if (colors[configKey]) applyThemeVar(key, colors[configKey]);
+            });
+        }
+
+        function saveTheme() {
+            const saved = {};
+            THEME_VARS.forEach(({ key, configKey }) => {
+                saved[configKey] = getComputedStyle(document.documentElement)
+                    .getPropertyValue(key).trim();
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        }
+
+        function loadSavedTheme() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    applyThemeObject(JSON.parse(raw));
+                    return true;
+                }
+            } catch {}
+            return false;
+        }
+
+        function resetTheme() {
+            localStorage.removeItem(STORAGE_KEY);
+            applyThemeObject(configDefaults);
+            buildThemePickers();
+        }
+
+        function exportTheme() {
+            const colors = {};
+            THEME_VARS.forEach(({ key, configKey }) => {
+                colors[configKey] = normalizeHex(
+                    getComputedStyle(document.documentElement).getPropertyValue(key).trim()
+                );
+            });
+            const out = {
+                tabTitle: document.title,
+                appName: document.getElementById('app-name').innerHTML,
+                colors
+            };
+            const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'config.json';
+            a.click();
+        }
+
+        function toggleThemePanel() {
+            const panel = document.getElementById('theme-panel');
+            const backdrop = document.getElementById('theme-backdrop');
+            const isOpen = panel.style.display !== 'none';
+            panel.style.display = isOpen ? 'none' : 'block';
+            backdrop.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) buildThemePickers();
+        }
+
+        loadConfig().then(() => {
+            loadSavedTheme(); // override config defaults with user's saved theme if any
+            init();
+        });
+    </script>
+</body>
+
+<footer style="
+    text-align: center;
+    padding: 32px 16px;
+    margin-top: 5px;
+    border-top: 1px solid var(--border);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+">
+    Made by
+    <a href="https://github.com/s3vro-h1"
+       target="_blank"
+       rel="noopener"
+       style="color: var(--primary); text-decoration: none; font-weight: 700;">
+        s3vro-h1
+    </a>
+    · Mevami
+</footer>
+
+</html>
